@@ -310,24 +310,26 @@
             align-items: center;
             position: relative;
             left: auto;
+            right: auto;
             order: -1;
             width: 100%;
             justify-content: center;
             margin-bottom: 10px;
         }
         
-        /* Layout específico para telas grandes (landscape) */
-        @media (min-width: 768px) and (orientation: landscape) {
-            .progress-indicator {
-                position: absolute;
-                left: 40px;
-                width: auto;
-                margin-bottom: 0;
-                order: 0;
-            }
-            
+        /* Layout simétrico em todas as orientações */
+        @media (orientation: portrait) {
             .bottom-controls {
-                flex-wrap: nowrap;
+                padding-left: 20px;
+                padding-right: 20px;
+            }
+        }
+        
+        @media (orientation: landscape) {
+            .bottom-controls {
+                flex-wrap: wrap;
+                padding-left: 40px;
+                padding-right: 40px;
             }
         }
 
