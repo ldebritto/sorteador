@@ -137,14 +137,19 @@
             max-width: 90%;
             line-height: 1.5;
             color: #d1d0c5;
+            max-height: 60vh;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
         }
 
         .bottom-controls {
             padding: 40px;
             display: flex;
+            flex-wrap: wrap;
             justify-content: center;
             align-items: center;
             gap: 20px;
+            padding-bottom: calc(40px + env(safe-area-inset-bottom));
         }
 
         button {
@@ -264,6 +269,9 @@
             padding: 0;
             max-width: 90%;
             text-align: left;
+            max-height: 60vh;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
         }
 
         .summary-list li {
@@ -300,8 +308,27 @@
             display: flex;
             gap: 12px;
             align-items: center;
-            position: absolute;
-            left: 40px;
+            position: relative;
+            left: auto;
+            order: -1;
+            width: 100%;
+            justify-content: center;
+            margin-bottom: 10px;
+        }
+        
+        /* Layout específico para telas grandes (landscape) */
+        @media (min-width: 768px) and (orientation: landscape) {
+            .progress-indicator {
+                position: absolute;
+                left: 40px;
+                width: auto;
+                margin-bottom: 0;
+                order: 0;
+            }
+            
+            .bottom-controls {
+                flex-wrap: nowrap;
+            }
         }
 
         .progress-dot {
