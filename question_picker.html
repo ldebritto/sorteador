@@ -1,0 +1,972 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sorteador de Questões</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Code', monospace;
+            background: #1a1a1a;
+            color: #d1d0c5;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .reset-button {
+            background: #2c2c2c;
+            color: #ff9800;
+            border: 2px solid #ff9800;
+            padding: 8px 20px;
+            font-size: 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all 0.3s;
+        }
+
+        .reset-button:hover {
+            background: #ff9800;
+            color: #1a1a1a;
+        }
+
+        select {
+            background: #2c2c2c;
+            color: #d1d0c5;
+            border: 2px solid #3a3a3a;
+            padding: 10px 20px;
+            font-size: 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: inherit;
+            transition: border-color 0.3s;
+        }
+
+        select:hover {
+            border-color: #646669;
+        }
+
+        select:focus {
+            outline: none;
+            border-color: #e2b714;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .file-label {
+            background: #2c2c2c;
+            color: #d1d0c5;
+            border: 2px solid #3a3a3a;
+            padding: 10px 20px;
+            font-size: 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all 0.3s;
+        }
+
+        .file-label:hover {
+            border-color: #646669;
+            background: #323232;
+        }
+
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 40px;
+            gap: 40px;
+        }
+
+        .timer {
+            font-size: clamp(48px, 10vw, 120px);
+            font-weight: bold;
+            transition: color 0.3s, opacity 0.3s;
+            letter-spacing: 0.05em;
+        }
+
+        .timer.normal {
+            color: #e2b714;
+        }
+
+        .timer.warning {
+            color: #ff9800;
+        }
+
+        .timer.danger {
+            color: #ff5252;
+        }
+
+        .timer.hidden {
+            display: none;
+        }
+
+        .timer.dimmed {
+            color: #646669;
+        }
+
+        .question {
+            font-size: clamp(24px, 4vw, 48px);
+            text-align: center;
+            max-width: 90%;
+            line-height: 1.5;
+            color: #d1d0c5;
+        }
+
+        .bottom-controls {
+            padding: 40px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+        }
+
+        button {
+            background: #2c2c2c;
+            color: #d1d0c5;
+            border: 2px solid #3a3a3a;
+            padding: 15px 40px;
+            font-size: 18px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        button:hover {
+            border-color: #646669;
+            background: #323232;
+            transform: translateY(-2px);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        button:disabled:hover {
+            transform: none;
+        }
+
+        .icon {
+            width: 20px;
+            height: 20px;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .keyboard-hint {
+            display: inline-block;
+            margin-left: 8px;
+            padding: 2px 6px;
+            background: #3a3a3a;
+            border: 1px solid #646669;
+            border-radius: 4px;
+            font-size: 12px;
+            font-family: monospace;
+            color: #d1d0c5;
+        }
+
+        .recording-indicator {
+            display: none;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: #2c2c2c;
+            border: 2px solid #ff5252;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .recording-indicator.active {
+            display: flex;
+        }
+
+        .recording-dot {
+            width: 10px;
+            height: 10px;
+            background: #ff5252;
+            border-radius: 50%;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        .settings {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        input[type="number"] {
+            background: #2c2c2c;
+            color: #d1d0c5;
+            border: 2px solid #3a3a3a;
+            padding: 10px;
+            width: 50px;
+            font-size: 16px;
+            border-radius: 8px;
+            font-family: inherit;
+        }
+
+        input[type="number"]:focus {
+            outline: none;
+            border-color: #e2b714;
+        }
+
+        .placeholder {
+            color: #646669;
+            font-style: italic;
+        }
+
+        .summary-list {
+            list-style: none;
+            padding: 0;
+            max-width: 90%;
+            text-align: left;
+        }
+
+        .summary-list li {
+            margin-bottom: 30px;
+            font-size: clamp(18px, 3vw, 32px);
+            line-height: 1.6;
+            padding-left: 40px;
+            position: relative;
+        }
+
+        .summary-list li::before {
+            content: attr(data-number);
+            position: absolute;
+            left: 0;
+            font-weight: bold;
+            color: #e2b714;
+        }
+
+        .summary-list li.skipped {
+            color: #646669;
+            opacity: 0.6;
+        }
+
+        .summary-list li.skipped::before {
+            color: #ff9800;
+        }
+
+        label {
+            font-size: 14px;
+            color: #646669;
+        }
+
+        .progress-indicator {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            position: absolute;
+            left: 40px;
+        }
+
+        .progress-dot {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #3a3a3a;
+            border: 2px solid #646669;
+            transition: all 0.3s;
+        }
+
+        .progress-dot.completed {
+            background: #4caf50;
+            border-color: #4caf50;
+            box-shadow: 0 0 10px rgba(76, 175, 80, 0.5);
+        }
+
+        .progress-dot.skipped {
+            background: #ff9800;
+            border-color: #ff9800;
+            box-shadow: 0 0 10px rgba(255, 152, 0, 0.5);
+        }
+
+        .progress-dot.current {
+            background: #e2b714;
+            border-color: #e2b714;
+            box-shadow: 0 0 10px rgba(226, 183, 20, 0.5);
+            transform: scale(1.2);
+        }
+
+        .progress-label {
+            font-size: 14px;
+            color: #646669;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-controls">
+            <label for="fileInput" class="file-label">Carregar</label>
+            <input type="file" id="fileInput" accept=".md,.txt" multiple>
+            <select id="fileSelect" style="display: none;">
+                <option value="">Escolha a prova</option>
+            </select>
+            <div class="settings">
+                <label for="timerMinutes">Timer (min):</label>
+                <input type="number" id="timerMinutes" value="5" min="1" max="60">
+            </div>
+            <div class="recording-indicator" id="recordingIndicator">
+                <div class="recording-dot"></div>
+                <span>Gravando áudio</span>
+            </div>
+            <button class="reset-button" id="resetButton">Nova Prova<span class="keyboard-hint">r</span></button>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="timer normal" id="timer">5:00</div>
+        <div class="question placeholder" id="question">Carregue um arquivo e clique em "Sortear Questão"</div>
+    </div>
+
+    <div class="bottom-controls">
+        <div class="progress-indicator">
+            <span class="progress-label">Questões:</span>
+            <div class="progress-dot" id="dot1"></div>
+            <div class="progress-dot" id="dot2"></div>
+            <div class="progress-dot" id="dot3"></div>
+            <div class="progress-dot" id="dot4"></div>
+            <div class="progress-dot" id="dot5"></div>
+        </div>
+        
+        <button id="skipButton" disabled>
+            <svg class="icon" viewBox="0 0 24 24">
+                <path d="M5 4l10 8-10 8V4z"/>
+                <line x1="19" y1="5" x2="19" y2="19"/>
+            </svg>
+            Pular<span class="keyboard-hint">_</span>
+        </button>
+        
+        <button id="drawButton" disabled>
+            <svg class="icon" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="10"/>
+                <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+                <line x1="12" y1="17" x2="12.01" y2="17"/>
+            </svg>
+            Próxima<span class="keyboard-hint">⏎</span>
+        </button>
+        
+        <button id="pauseButton" disabled>
+            <svg class="icon" viewBox="0 0 24 24">
+                <rect x="6" y="4" width="4" height="16"/>
+                <rect x="14" y="4" width="4" height="16"/>
+            </svg>
+            Pausa<span class="keyboard-hint">p</span>
+        </button>
+    </div>
+
+    <script>
+        let questions = [];
+        let usedQuestions = [];
+        let currentSessionQuestions = []; // Questões da sessão atual (máximo 5)
+        let questionStatus = []; // 'answered' ou 'skipped'
+        let skipCount = 0; // Conta quantas questões foram puladas (máximo 2)
+        let currentQuestionIndex = 0; // Índice da questão atual (0-4)
+        let timerInterval = null;
+        let timeLeft = 0;
+        let isPaused = false;
+        let loadedFiles = {};
+        
+        // Variáveis para gravação de áudio
+        let mediaRecorder = null;
+        let audioChunks = [];
+        let isRecording = false;
+        let currentFileName = '';
+
+        const fileInput = document.getElementById('fileInput');
+        const fileSelect = document.getElementById('fileSelect');
+        const timerMinutesInput = document.getElementById('timerMinutes');
+        const timerDisplay = document.getElementById('timer');
+        const questionDisplay = document.getElementById('question');
+        const drawButton = document.getElementById('drawButton');
+        const pauseButton = document.getElementById('pauseButton');
+        const skipButton = document.getElementById('skipButton');
+        const resetButton = document.getElementById('resetButton');
+        const recordingIndicator = document.getElementById('recordingIndicator');
+        const dots = [
+            document.getElementById('dot1'),
+            document.getElementById('dot2'),
+            document.getElementById('dot3'),
+            document.getElementById('dot4'),
+            document.getElementById('dot5')
+        ];
+
+        fileInput.addEventListener('change', handleFileSelect);
+        fileSelect.addEventListener('change', handleFileChange);
+        drawButton.addEventListener('click', drawQuestion);
+        pauseButton.addEventListener('click', togglePause);
+        skipButton.addEventListener('click', skipQuestion);
+        resetButton.addEventListener('click', resetProgress);
+
+        // Atalhos de teclado
+        document.addEventListener('keydown', (e) => {
+            // Enter - Próxima questão
+            if (e.key === 'Enter' && !drawButton.disabled) {
+                e.preventDefault();
+                drawQuestion();
+            }
+            // Espaço - Pular questão
+            else if (e.key === ' ' && !skipButton.disabled) {
+                e.preventDefault();
+                skipQuestion();
+            }
+            // P - Pausar/Retomar
+            else if (e.key === 'p' || e.key === 'P') {
+                if (!pauseButton.disabled) {
+                    e.preventDefault();
+                    togglePause();
+                }
+            }
+            // R - Nova Prova
+            else if (e.key === 'r' || e.key === 'R') {
+                e.preventDefault();
+                resetProgress();
+            }
+        });
+
+        // Funções de gravação de áudio
+        async function startRecording() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorder = new MediaRecorder(stream);
+                audioChunks = [];
+                
+                mediaRecorder.ondataavailable = (event) => {
+                    if (event.data.size > 0) {
+                        audioChunks.push(event.data);
+                    }
+                };
+                
+                mediaRecorder.onstop = () => {
+                    const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                    downloadAudio(audioBlob);
+                    
+                    // Para todas as tracks do stream
+                    stream.getTracks().forEach(track => track.stop());
+                };
+                
+                mediaRecorder.start();
+                isRecording = true;
+                recordingIndicator.classList.add('active');
+                
+                console.log('Gravação iniciada');
+            } catch (error) {
+                console.error('Erro ao iniciar gravação:', error);
+                alert('Não foi possível acessar o microfone. Verifique as permissões do navegador.');
+            }
+        }
+        
+        function stopRecording() {
+            if (mediaRecorder && isRecording) {
+                mediaRecorder.stop();
+                isRecording = false;
+                recordingIndicator.classList.remove('active');
+                console.log('Gravação finalizada');
+            }
+        }
+        
+        function downloadAudio(audioBlob) {
+            const url = URL.createObjectURL(audioBlob);
+            const a = document.createElement('a');
+            a.style.display = 'none';
+            a.href = url;
+            
+            // Nome do arquivo: prova_[nome-arquivo]_[data-hora].webm
+            const now = new Date();
+            const timestamp = now.toISOString().slice(0, 19).replace(/:/g, '-');
+            const fileName = `prova_${currentFileName}_${timestamp}.webm`;
+            
+            a.download = fileName;
+            document.body.appendChild(a);
+            a.click();
+            
+            setTimeout(() => {
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }, 100);
+        }
+
+        function handleFileSelect(e) {
+            const files = e.target.files;
+            
+            for (let file of files) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const content = event.target.result;
+                    loadedFiles[file.name] = content;
+                    updateFileSelect();
+                };
+                reader.readAsText(file);
+            }
+        }
+
+        function updateFileSelect() {
+            fileSelect.innerHTML = '<option value="">Escolha a prova</option>';
+            
+            const fileNames = Object.keys(loadedFiles);
+            
+            for (let fileName of fileNames) {
+                const option = document.createElement('option');
+                option.value = fileName;
+                option.textContent = fileName;
+                fileSelect.appendChild(option);
+            }
+            
+            // Se há apenas 1 arquivo, seleciona automaticamente e esconde o dropdown
+            if (fileNames.length === 1) {
+                fileSelect.style.display = 'none';
+                fileSelect.value = fileNames[0];
+                currentFileName = fileNames[0].replace(/\.(md|txt)$/, '');
+                handleFileChange();
+            } 
+            // Se há mais de 1 arquivo, mostra o dropdown
+            else if (fileNames.length > 1) {
+                fileSelect.style.display = 'inline-block';
+            }
+        }
+
+        function handleFileChange() {
+            const selectedFile = fileSelect.value;
+            
+            if (selectedFile && loadedFiles[selectedFile]) {
+                currentFileName = selectedFile.replace(/\.(md|txt)$/, '');
+                parseMarkdown(loadedFiles[selectedFile]);
+                drawButton.disabled = false;
+                questionDisplay.textContent = 'Clique em "Próxima" para começar';
+                questionDisplay.classList.add('placeholder');
+                stopTimer();
+                
+                // Mostra timer em cinza com 0:00
+                timerDisplay.classList.remove('hidden');
+                timerDisplay.classList.add('dimmed');
+                timerDisplay.textContent = '0:00';
+                
+                resetProgress();
+            } else {
+                questions = [];
+                usedQuestions = [];
+                drawButton.disabled = true;
+                questionDisplay.textContent = 'Carregue um arquivo e clique em "Próxima" para começar';
+                questionDisplay.classList.add('placeholder');
+                
+                // Mostra timer em cinza com 0:00
+                timerDisplay.classList.remove('hidden');
+                timerDisplay.classList.add('dimmed');
+                timerDisplay.textContent = '0:00';
+                
+                resetProgress();
+            }
+        }
+
+        function parseMarkdown(content) {
+            questions = [];
+            usedQuestions = [];
+            resetProgress();
+            
+            const lines = content.split('\n');
+            
+            for (let line of lines) {
+                line = line.trim();
+                
+                // Ignora linhas vazias, títulos markdown (#) e linhas sem conteúdo
+                if (!line || line.startsWith('#')) {
+                    continue;
+                }
+                
+                // Detecta apenas linhas que começam com número seguido de ponto ou parêntese
+                // e captura apenas essa linha (não continua em linhas seguintes)
+                if (/^\d+[\.\)]/.test(line)) {
+                    const question = line.replace(/^\d+[\.\)]\s*/, '').trim();
+                    if (question) {
+                        questions.push(question);
+                    }
+                }
+            }
+            
+            console.log(`${questions.length} questões carregadas`);
+        }
+
+        function drawQuestion() {
+            if (questions.length === 0) return;
+            
+            // Verifica se deve mostrar o resumo
+            if (shouldShowSummary()) {
+                showSummary();
+                drawButton.disabled = true;
+                skipButton.disabled = true;
+                // NÃO para a gravação aqui - continua até "Nova Prova"
+                return;
+            }
+            
+            // Inicia gravação na primeira questão
+            if (currentSessionQuestions.length === 0 && !isRecording) {
+                startRecording();
+            }
+            
+            // Verifica se já atingiu o limite de 5 questões
+            if (currentSessionQuestions.length >= 5) {
+                alert('Este aluno já tem 5 questões designadas! Use "Nova Prova" para começar uma nova sessão.');
+                return;
+            }
+            
+            // Se todas as questões foram usadas, reinicia
+            if (usedQuestions.length === questions.length) {
+                usedQuestions = [];
+            }
+            
+            // Filtra questões ainda não usadas
+            const availableQuestions = questions.filter((_, index) => !usedQuestions.includes(index));
+            
+            // Sorteia uma questão
+            const randomIndex = Math.floor(Math.random() * availableQuestions.length);
+            const selectedQuestion = availableQuestions[randomIndex];
+            const originalIndex = questions.indexOf(selectedQuestion);
+            
+            usedQuestions.push(originalIndex);
+            currentSessionQuestions.push(selectedQuestion);
+            questionStatus.push('answered'); // Marca como respondida por padrão
+            
+            questionDisplay.textContent = selectedQuestion;
+            questionDisplay.classList.remove('placeholder');
+            
+            updateProgressIndicator();
+            startTimer();
+            
+            // Habilita o botão de pular apenas se ainda não pulou 2 vezes
+            skipButton.disabled = skipCount >= 2;
+        }
+        
+        function skipQuestion() {
+            // Marca a última questão como pulada
+            if (questionStatus.length > 0) {
+                questionStatus[questionStatus.length - 1] = 'skipped';
+                skipCount++; // Incrementa o contador de pulos
+            }
+            
+            // Para o timer
+            stopTimer();
+            
+            // Atualiza o indicador
+            updateProgressIndicator();
+            
+            // Verifica se deve mostrar o resumo
+            if (shouldShowSummary()) {
+                showSummary();
+                drawButton.disabled = true;
+                skipButton.disabled = true;
+                return;
+            }
+            
+            // Sorteia automaticamente a próxima questão
+            if (currentSessionQuestions.length < 5) {
+                drawQuestion();
+            }
+        }
+        
+        function shouldShowSummary() {
+            const answeredCount = questionStatus.filter(s => s === 'answered').length;
+            const skippedCount = questionStatus.filter(s => s === 'skipped').length;
+            
+            // Mostra resumo se: 3 respondidas + 0 puladas OU 5 questões no total
+            return (answeredCount === 3 && skippedCount === 0) || 
+                   (currentSessionQuestions.length === 5);
+        }
+        
+        function showSummary() {
+            // Esconde o timer
+            timerDisplay.classList.add('hidden');
+            
+            // Atualiza o indicador para mostrar todas como completadas
+            dots.forEach((dot, index) => {
+                dot.classList.remove('completed', 'current', 'skipped');
+                
+                if (index < currentSessionQuestions.length) {
+                    const status = questionStatus[index];
+                    if (status === 'skipped') {
+                        dot.classList.add('skipped');
+                    } else {
+                        dot.classList.add('completed');
+                    }
+                }
+            });
+            
+            // Cria a lista de questões
+            let summaryHTML = '<ul class="summary-list">';
+            
+            currentSessionQuestions.forEach((question, index) => {
+                const status = questionStatus[index];
+                const className = status === 'skipped' ? 'skipped' : '';
+                summaryHTML += `<li class="${className}" data-number="${index + 1}.">${question}</li>`;
+            });
+            
+            summaryHTML += '</ul>';
+            
+            questionDisplay.innerHTML = summaryHTML;
+            questionDisplay.classList.remove('placeholder');
+        }
+        
+        function resetProgress() {
+            currentSessionQuestions = [];
+            questionStatus = [];
+            skipCount = 0; // Reseta o contador de pulos
+            currentQuestionIndex = 0;
+            stopTimer();
+            stopRecording(); // Para a gravação se estiver ativa
+            
+            // Mostra o timer em cinza com 0:00
+            timerDisplay.classList.remove('hidden');
+            timerDisplay.classList.add('dimmed');
+            timerDisplay.textContent = '0:00';
+            
+            updateProgressIndicator();
+            drawButton.disabled = questions.length === 0;
+            skipButton.disabled = true;
+            questionDisplay.textContent = questions.length > 0 ? 'Clique em "Próxima" para começar' : 'Carregue um arquivo e clique em "Próxima" para começar';
+            questionDisplay.classList.add('placeholder');
+        }
+        
+        function updateProgressIndicator() {
+            dots.forEach((dot, index) => {
+                dot.classList.remove('completed', 'current', 'skipped');
+                
+                if (index < currentSessionQuestions.length - 1) {
+                    // Questões já completadas
+                    const status = questionStatus[index];
+                    if (status === 'skipped') {
+                        dot.classList.add('skipped');
+                    } else {
+                        dot.classList.add('completed');
+                    }
+                } else if (index === currentSessionQuestions.length - 1) {
+                    // Questão atual
+                    dot.classList.add('current');
+                }
+            });
+        }
+
+        // Funções para criar sons suaves usando Web Audio API
+        function playSound(frequency, duration, type = 'sine') {
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.frequency.value = frequency;
+            oscillator.type = type;
+            
+            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + duration);
+        }
+
+        function playStartSound() {
+            // Som ascendente suave (C5 -> E5 -> G5)
+            playSound(523.25, 0.15); // C5
+            setTimeout(() => playSound(659.25, 0.15), 100); // E5
+            setTimeout(() => playSound(783.99, 0.2), 200); // G5
+        }
+
+        function playWarningSound() {
+            // Som de alerta suave (A4 -> A4)
+            playSound(440, 0.2);
+            setTimeout(() => playSound(440, 0.2), 250);
+        }
+
+        function playDangerSound() {
+            // Som mais urgente mas ainda suave (E5 -> E5 -> E5)
+            playSound(659.25, 0.15);
+            setTimeout(() => playSound(659.25, 0.15), 150);
+            setTimeout(() => playSound(659.25, 0.2), 300);
+        }
+
+        function playEndSound() {
+            // Som descendente (G5 -> E5 -> C5)
+            playSound(783.99, 0.15);
+            setTimeout(() => playSound(659.25, 0.15), 150);
+            setTimeout(() => playSound(523.25, 0.3), 300);
+        }
+
+        function startTimer() {
+            // Limpa completamente qualquer timer anterior
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+            
+            isPaused = false;
+            pauseButton.disabled = false;
+            pauseButton.innerHTML = `
+                <svg class="icon" viewBox="0 0 24 24">
+                    <rect x="6" y="4" width="4" height="16"/>
+                    <rect x="14" y="4" width="4" height="16"/>
+                </svg>
+                Pausa<span class="keyboard-hint">p</span>
+            `;
+            
+            // Remove o estilo dimmed e restaura cor normal
+            timerDisplay.classList.remove('dimmed');
+            
+            const minutes = parseInt(timerMinutesInput.value) || 5;
+            timeLeft = minutes * 60;
+            
+            updateTimerDisplay();
+            playStartSound(); // Som ao iniciar
+            
+            // Variáveis locais para controlar sons deste timer específico
+            let warningPlayed = false;
+            let dangerPlayed = false;
+            let isActiveTimer = true; // Flag para verificar se este timer ainda é válido
+            
+            timerInterval = setInterval(() => {
+                // Verifica se este ainda é o timer ativo
+                if (!isActiveTimer) {
+                    clearInterval(timerInterval);
+                    return;
+                }
+                
+                if (!isPaused) {
+                    timeLeft--;
+                    updateTimerDisplay();
+                    
+                    // Toca som de aviso quando restar 1 minuto
+                    if (timeLeft === 60 && !warningPlayed && isActiveTimer) {
+                        playWarningSound();
+                        warningPlayed = true;
+                    }
+                    
+                    // Toca som de perigo quando restarem 30 segundos
+                    if (timeLeft === 30 && !dangerPlayed && isActiveTimer) {
+                        playDangerSound();
+                        dangerPlayed = true;
+                    }
+                    
+                    if (timeLeft <= 0) {
+                        if (isActiveTimer) {
+                            playEndSound(); // Som ao terminar
+                        }
+                        isActiveTimer = false;
+                        stopTimer();
+                    }
+                }
+            }, 1000);
+            
+            // Marca timers anteriores como inativos quando criar um novo
+            return () => { isActiveTimer = false; };
+        }
+
+        function stopTimer() {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+            // Força resetar o timeLeft para evitar sons fantasma
+            timeLeft = 0;
+            isPaused = false;
+            pauseButton.disabled = true;
+            pauseButton.innerHTML = `
+                <svg class="icon" viewBox="0 0 24 24">
+                    <rect x="6" y="4" width="4" height="16"/>
+                    <rect x="14" y="4" width="4" height="16"/>
+                </svg>
+                Pausa<span class="keyboard-hint">p</span>
+            `;
+        }
+
+        function togglePause() {
+            isPaused = !isPaused;
+            const icon = pauseButton.querySelector('.icon');
+            
+            if (isPaused) {
+                pauseButton.innerHTML = `
+                    <svg class="icon" viewBox="0 0 24 24">
+                        <polygon points="5 3 19 12 5 21 5 3"/>
+                    </svg>
+                    Retomar<span class="keyboard-hint">p</span>
+                `;
+            } else {
+                pauseButton.innerHTML = `
+                    <svg class="icon" viewBox="0 0 24 24">
+                        <rect x="6" y="4" width="4" height="16"/>
+                        <rect x="14" y="4" width="4" height="16"/>
+                    </svg>
+                    Pausa<span class="keyboard-hint">p</span>
+                `;
+            }
+        }
+
+        function updateTimerDisplay() {
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            timerDisplay.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+            
+            // Não aplica cores se o timer está no modo dimmed (tela inicial)
+            if (timerDisplay.classList.contains('dimmed')) {
+                return;
+            }
+            
+            // Muda a cor do timer
+            timerDisplay.classList.remove('normal', 'warning', 'danger');
+            
+            if (timeLeft <= 30) {
+                timerDisplay.classList.add('danger');
+            } else if (timeLeft <= 60) {
+                timerDisplay.classList.add('warning');
+            } else {
+                timerDisplay.classList.add('normal');
+            }
+        }
+
+        // Inicializa o display do timer
+        updateTimerDisplay();
+    </script>
+</body>
+</html>
