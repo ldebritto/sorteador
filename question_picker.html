@@ -13,8 +13,8 @@
 
         body {
             font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Code', monospace;
-            background: #1a1a1a;
-            color: #d1d0c5;
+            background: #F5F5F7;
+            color: #1D1D1F;
             height: 100vh;
             overflow: hidden;
             display: flex;
@@ -36,9 +36,9 @@
         }
 
         .reset-button {
-            background: #2c2c2c;
-            color: #ff9800;
-            border: 2px solid #ff9800;
+            background: #FFFFFF;
+            color: #FF3B30;
+            border: 2px solid #FF3B30;
             padding: 8px 20px;
             font-size: 14px;
             border-radius: 8px;
@@ -48,14 +48,14 @@
         }
 
         .reset-button:hover {
-            background: #ff9800;
-            color: #1a1a1a;
+            background: #FF3B30;
+            color: #FFFFFF;
         }
 
         select {
-            background: #2c2c2c;
-            color: #d1d0c5;
-            border: 2px solid #3a3a3a;
+            background: #FFFFFF;
+            color: #1D1D1F;
+            border: 2px solid #D2D2D7;
             padding: 10px 20px;
             font-size: 16px;
             border-radius: 8px;
@@ -65,12 +65,12 @@
         }
 
         select:hover {
-            border-color: #646669;
+            border-color: #86868B;
         }
 
         select:focus {
             outline: none;
-            border-color: #e2b714;
+            border-color: #007AFF;
         }
 
         input[type="file"] {
@@ -78,9 +78,9 @@
         }
 
         .file-label {
-            background: #2c2c2c;
-            color: #d1d0c5;
-            border: 2px solid #3a3a3a;
+            background: #FFFFFF;
+            color: #1D1D1F;
+            border: 2px solid #D2D2D7;
             padding: 10px 20px;
             font-size: 16px;
             border-radius: 8px;
@@ -90,8 +90,8 @@
         }
 
         .file-label:hover {
-            border-color: #646669;
-            background: #323232;
+            border-color: #86868B;
+            background: #F5F5F7;
         }
 
         .main-content {
@@ -112,15 +112,15 @@
         }
 
         .timer.normal {
-            color: #e2b714;
+            color: #34C759;
         }
 
         .timer.warning {
-            color: #ff9800;
+            color: #FF9500;
         }
 
         .timer.danger {
-            color: #ff5252;
+            color: #FF3B30;
         }
 
         .timer.hidden {
@@ -128,7 +128,7 @@
         }
 
         .timer.dimmed {
-            color: #646669;
+            color: #86868B;
         }
 
         .question {
@@ -136,7 +136,7 @@
             text-align: center;
             max-width: 90%;
             line-height: 1.5;
-            color: #d1d0c5;
+            color: #1D1D1F;
             max-height: 60vh;
             overflow-y: auto;
             -webkit-overflow-scrolling: touch;
@@ -153,9 +153,9 @@
         }
 
         button {
-            background: #2c2c2c;
-            color: #d1d0c5;
-            border: 2px solid #3a3a3a;
+            background: #FFFFFF;
+            color: #1D1D1F;
+            border: 2px solid #D2D2D7;
             padding: 15px 40px;
             font-size: 18px;
             border-radius: 8px;
@@ -168,8 +168,8 @@
         }
 
         button:hover {
-            border-color: #646669;
-            background: #323232;
+            border-color: #007AFF;
+            background: #F5F5F7;
             transform: translateY(-2px);
         }
 
@@ -201,12 +201,12 @@
             display: inline-block;
             margin-left: 8px;
             padding: 2px 6px;
-            background: #3a3a3a;
-            border: 1px solid #646669;
+            background: #F5F5F7;
+            border: 1px solid #D2D2D7;
             border-radius: 4px;
             font-size: 12px;
             font-family: monospace;
-            color: #d1d0c5;
+            color: #86868B;
         }
 
         .recording-indicator {
@@ -214,8 +214,8 @@
             align-items: center;
             gap: 8px;
             padding: 8px 16px;
-            background: #2c2c2c;
-            border: 2px solid #ff5252;
+            background: #FFFFFF;
+            border: 2px solid #FF3B30;
             border-radius: 8px;
             font-size: 14px;
         }
@@ -227,7 +227,7 @@
         .recording-dot {
             width: 10px;
             height: 10px;
-            background: #ff5252;
+            background: #FF3B30;
             border-radius: 50%;
             animation: pulse 1.5s ease-in-out infinite;
         }
@@ -244,9 +244,9 @@
         }
 
         input[type="number"] {
-            background: #2c2c2c;
-            color: #d1d0c5;
-            border: 2px solid #3a3a3a;
+            background: #FFFFFF;
+            color: #1D1D1F;
+            border: 2px solid #D2D2D7;
             padding: 10px;
             width: 50px;
             font-size: 16px;
@@ -256,11 +256,11 @@
 
         input[type="number"]:focus {
             outline: none;
-            border-color: #e2b714;
+            border-color: #007AFF;
         }
 
         .placeholder {
-            color: #646669;
+            color: #86868B;
             font-style: italic;
         }
 
@@ -287,21 +287,21 @@
             position: absolute;
             left: 0;
             font-weight: bold;
-            color: #e2b714;
+            color: #007AFF;
         }
 
         .summary-list li.skipped {
-            color: #646669;
+            color: #86868B;
             opacity: 0.6;
         }
 
         .summary-list li.skipped::before {
-            color: #ff9800;
+            color: #FF9500;
         }
 
         label {
             font-size: 14px;
-            color: #646669;
+            color: #86868B;
         }
 
         .progress-indicator {
@@ -335,33 +335,33 @@
             width: 16px;
             height: 16px;
             border-radius: 50%;
-            background: #3a3a3a;
-            border: 2px solid #646669;
+            background: #E5E5EA;
+            border: 2px solid #C7C7CC;
             transition: all 0.3s;
         }
 
         .progress-dot.completed {
-            background: #4caf50;
-            border-color: #4caf50;
-            box-shadow: 0 0 10px rgba(76, 175, 80, 0.5);
+            background: #34C759;
+            border-color: #34C759;
+            box-shadow: 0 0 10px rgba(52, 199, 89, 0.5);
         }
 
         .progress-dot.skipped {
-            background: #ff9800;
-            border-color: #ff9800;
-            box-shadow: 0 0 10px rgba(255, 152, 0, 0.5);
+            background: #FF9500;
+            border-color: #FF9500;
+            box-shadow: 0 0 10px rgba(255, 149, 0, 0.5);
         }
 
         .progress-dot.current {
-            background: #e2b714;
-            border-color: #e2b714;
-            box-shadow: 0 0 10px rgba(226, 183, 20, 0.5);
+            background: #007AFF;
+            border-color: #007AFF;
+            box-shadow: 0 0 10px rgba(0, 122, 255, 0.5);
             transform: scale(1.2);
         }
 
         .progress-label {
             font-size: 14px;
-            color: #646669;
+            color: #86868B;
             margin-right: 10px;
         }
     </style>
