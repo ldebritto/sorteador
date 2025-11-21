@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sorteador de Questões</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="header">
+        <div class="header-controls">
+            <label for="fileInput" class="file-label">Carregar</label>
+            <input type="file" id="fileInput" accept=".md,.txt" multiple>
+            <select id="fileSelect" style="display: none;">
+                <option value="">Escolha a prova</option>
+            </select>
+            <div class="settings">
+                <label for="timerMinutes">Timer (min):</label>
+                <input type="number" id="timerMinutes" value="5" min="1" max="60">
+            </div>
+            <div class="recording-indicator" id="recordingIndicator">
+                <div class="recording-dot"></div>
+                <span>Gravando áudio</span>
+            </div>
+            <button class="reset-button" id="resetButton">Nova Prova<span class="keyboard-hint">r</span></button>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="timer normal dimmed" id="timer">0:00</div>
+        <div class="question placeholder" id="question">Carregue um arquivo e clique em "Próxima" para começar</div>
+    </div>
+
+    <div class="bottom-controls">
+        <div class="progress-indicator">
+            <span class="progress-label">Questões:</span>
+            <div class="progress-dot" id="dot1"></div>
+            <div class="progress-dot" id="dot2"></div>
+            <div class="progress-dot" id="dot3"></div>
+            <div class="progress-dot" id="dot4"></div>
+            <div class="progress-dot" id="dot5"></div>
+        </div>
+        
+        <button id="skipButton" disabled>
+            <svg class="icon" viewBox="0 0 24 24">
+                <path d="M5 4l10 8-10 8V4z"/>
+                <line x1="19" y1="5" x2="19" y2="19"/>
+            </svg>
+            Pular<span class="keyboard-hint">Espaço</span>
+        </button>
+        
+        <button id="drawButton" disabled>
+            <svg class="icon" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="10"/>
+                <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+                <line x1="12" y1="17" x2="12.01" y2="17"/>
+            </svg>
+            Próxima<span class="keyboard-hint">⏎</span>
+        </button>
+        
+        <button id="pauseButton" disabled>
+            <svg class="icon" viewBox="0 0 24 24">
+                <rect x="6" y="4" width="4" height="16"/>
+                <rect x="14" y="4" width="4" height="16"/>
+            </svg>
+            Pausa<span class="keyboard-hint">p</span>
+        </button>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

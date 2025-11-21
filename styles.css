@@ -1,0 +1,360 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Code', monospace;
+    background: #F5F5F7;
+    color: #1D1D1F;
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.header {
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+}
+
+.header-controls {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.reset-button {
+    background: #FFFFFF;
+    color: #FF3B30;
+    border: 2px solid #FF3B30;
+    padding: 8px 20px;
+    font-size: 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.3s;
+}
+
+.reset-button:hover {
+    background: #FF3B30;
+    color: #FFFFFF;
+}
+
+select {
+    background: #FFFFFF;
+    color: #1D1D1F;
+    border: 2px solid #D2D2D7;
+    padding: 10px 20px;
+    font-size: 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-family: inherit;
+    transition: border-color 0.3s;
+}
+
+select:hover {
+    border-color: #86868B;
+}
+
+select:focus {
+    outline: none;
+    border-color: #007AFF;
+}
+
+input[type="file"] {
+    display: none;
+}
+
+.file-label {
+    background: #FFFFFF;
+    color: #1D1D1F;
+    border: 2px solid #D2D2D7;
+    padding: 10px 20px;
+    font-size: 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.3s;
+}
+
+.file-label:hover {
+    border-color: #86868B;
+    background: #F5F5F7;
+}
+
+.main-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 40px;
+    gap: 40px;
+}
+
+.timer {
+    font-size: clamp(48px, 10vw, 120px);
+    font-weight: bold;
+    transition: color 0.3s, opacity 0.3s;
+    letter-spacing: 0.05em;
+}
+
+.timer.normal {
+    color: #34C759;
+}
+
+.timer.warning {
+    color: #FF9500;
+}
+
+.timer.danger {
+    color: #FF3B30;
+}
+
+.timer.hidden {
+    display: none;
+}
+
+.timer.dimmed {
+    color: #86868B;
+}
+
+.question {
+    font-size: clamp(24px, 4vw, 48px);
+    text-align: center;
+    max-width: 90%;
+    line-height: 1.5;
+    color: #1D1D1F;
+    max-height: 60vh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.bottom-controls {
+    padding: 40px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+    padding-bottom: calc(40px + env(safe-area-inset-bottom));
+}
+
+button {
+    background: #FFFFFF;
+    color: #1D1D1F;
+    border: 2px solid #D2D2D7;
+    padding: 15px 40px;
+    font-size: 18px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+button:hover {
+    border-color: #007AFF;
+    background: #F5F5F7;
+    transform: translateY(-2px);
+}
+
+button:active {
+    transform: translateY(0);
+}
+
+button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+button:disabled:hover {
+    transform: none;
+}
+
+.icon {
+    width: 20px;
+    height: 20px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.keyboard-hint {
+    display: inline-block;
+    margin-left: 8px;
+    padding: 2px 6px;
+    background: #F5F5F7;
+    border: 1px solid #D2D2D7;
+    border-radius: 4px;
+    font-size: 12px;
+    font-family: monospace;
+    color: #86868B;
+}
+
+.recording-indicator {
+    display: none;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background: #FFFFFF;
+    border: 2px solid #FF3B30;
+    border-radius: 8px;
+    font-size: 14px;
+}
+
+.recording-indicator.active {
+    display: flex;
+}
+
+.recording-dot {
+    width: 10px;
+    height: 10px;
+    background: #FF3B30;
+    border-radius: 50%;
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+}
+
+.settings {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+input[type="number"] {
+    background: #FFFFFF;
+    color: #1D1D1F;
+    border: 2px solid #D2D2D7;
+    padding: 10px;
+    width: 50px;
+    font-size: 16px;
+    border-radius: 8px;
+    font-family: inherit;
+}
+
+input[type="number"]:focus {
+    outline: none;
+    border-color: #007AFF;
+}
+
+.placeholder {
+    color: #86868B;
+    font-style: italic;
+}
+
+.summary-list {
+    list-style: none;
+    padding: 0;
+    max-width: 90%;
+    text-align: left;
+    max-height: 60vh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.summary-list li {
+    margin-bottom: 30px;
+    font-size: clamp(18px, 3vw, 32px);
+    line-height: 1.6;
+    padding-left: 40px;
+    position: relative;
+}
+
+.summary-list li::before {
+    content: attr(data-number);
+    position: absolute;
+    left: 0;
+    font-weight: bold;
+    color: #007AFF;
+}
+
+.summary-list li.skipped {
+    color: #86868B;
+    opacity: 0.6;
+}
+
+.summary-list li.skipped::before {
+    color: #FF9500;
+}
+
+label {
+    font-size: 14px;
+    color: #86868B;
+}
+
+.progress-indicator {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    position: relative;
+    left: auto;
+    right: auto;
+    order: -1;
+    width: 100%;
+    justify-content: center;
+    margin-bottom: 10px;
+}
+
+@media (orientation: portrait) {
+    .bottom-controls {
+        padding-left: 20px;
+        padding-right: 20px;
+    }
+}
+
+@media (orientation: landscape) {
+    .bottom-controls {
+        flex-wrap: wrap;
+        padding-left: 40px;
+        padding-right: 40px;
+    }
+}
+
+.progress-dot {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #E5E5EA;
+    border: 2px solid #C7C7CC;
+    transition: all 0.3s;
+}
+
+.progress-dot.completed {
+    background: #34C759;
+    border-color: #34C759;
+    box-shadow: 0 0 10px rgba(52, 199, 89, 0.5);
+}
+
+.progress-dot.skipped {
+    background: #FF9500;
+    border-color: #FF9500;
+    box-shadow: 0 0 10px rgba(255, 149, 0, 0.5);
+}
+
+.progress-dot.current {
+    background: #007AFF;
+    border-color: #007AFF;
+    box-shadow: 0 0 10px rgba(0, 122, 255, 0.5);
+    transform: scale(1.2);
+}
+
+.progress-label {
+    font-size: 14px;
+    color: #86868B;
+    margin-right: 10px;
+}
