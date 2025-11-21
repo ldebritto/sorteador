@@ -15,6 +15,7 @@ const state = {
     files: {},
     currentFileName: '',
     recorder: null,
+    recordingStream: null,
     audioChunks: [],
     isRecording: false
 };
@@ -442,22 +443,39 @@ function playEndSound() {
 async function startRecording() {
     try {
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        state.recorder = new MediaRecorder(stream);
+        const mimeType =
+            (MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported('audio/webm;codecs=opus') && 'audio/webm;codecs=opus') ||
+            (MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported('audio/webm') && 'audio/webm') ||
+            (MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported('audio/mp4') && 'audio/mp4') ||
+            undefined;
+
+        state.recorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
+        state.recordingStream = stream;
         state.audioChunks = [];
 
         state.recorder.ondataavailable = ({ data }) => {
             if (data.size > 0) state.audioChunks.push(data);
         };
 
+        state.recorder.onerror = (event) => {
+            console.error('Recorder error:', event.error);
+        };
+
         state.recorder.onstop = () => {
-            const audioBlob = new Blob(state.audioChunks, { type: 'audio/webm' });
-            downloadAudio(audioBlob);
-            stream.getTracks().forEach((track) => track.stop());
+            const blobType = mimeType || 'audio/webm';
+            const audioBlob = new Blob(state.audioChunks, { type: blobType });
+            if (state.audioChunks.length > 0) {
+                downloadAudio(audioBlob, blobType);
+            }
+            if (state.recordingStream) {
+                state.recordingStream.getTracks().forEach((track) => track.stop());
+                state.recordingStream = null;
+            }
             state.isRecording = false;
             ui.recordingIndicator.classList.remove('active');
         };
 
-        state.recorder.start();
+        state.recorder.start(1000); // timeslice para evitar estouro de buffer no Safari/iPad
         state.isRecording = true;
         ui.recordingIndicator.classList.add('active');
     } catch (error) {
@@ -472,9 +490,14 @@ function stopRecording() {
         state.isRecording = false;
         ui.recordingIndicator.classList.remove('active');
     }
+
+    if (state.recordingStream) {
+        state.recordingStream.getTracks().forEach((track) => track.stop());
+        state.recordingStream = null;
+    }
 }
 
-function downloadAudio(audioBlob) {
+function downloadAudio(audioBlob, mimeType) {
     const url = URL.createObjectURL(audioBlob);
     const anchor = document.createElement('a');
     anchor.style.display = 'none';
@@ -482,7 +505,8 @@ function downloadAudio(audioBlob) {
 
     const now = new Date();
     const timestamp = now.toISOString().slice(0, 19).replace(/:/g, '-');
-    const fileName = `prova_${state.currentFileName}_${timestamp}.webm`;
+    const extension = mimeType && mimeType.includes('mp4') ? 'm4a' : 'webm';
+    const fileName = `prova_${state.currentFileName}_${timestamp}.${extension}`;
 
     anchor.download = fileName;
     document.body.appendChild(anchor);
