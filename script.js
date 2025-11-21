@@ -54,7 +54,7 @@ function bindEvents() {
     ui.drawButton.addEventListener('click', drawQuestion);
     ui.pauseButton.addEventListener('click', togglePause);
     ui.skipButton.addEventListener('click', skipQuestion);
-    ui.resetButton.addEventListener('click', resetSession);
+    ui.resetButton.addEventListener('click', () => resetSession({ stopRecording: true }));
     document.addEventListener('keydown', handleShortcuts);
 }
 
@@ -215,12 +215,16 @@ function showSummary() {
     ui.questionDisplay.classList.remove('placeholder');
 }
 
-function resetSession() {
+function resetSession(options = {}) {
+    const { stopRecording: shouldStopRecording = false } = options;
+
     state.sessionQuestions = [];
     state.questionStatuses = [];
     state.skipCount = 0;
     stopTimer();
-    stopRecording();
+    if (shouldStopRecording) {
+        stopRecording();
+    }
 
     setTimerDimmed();
     updateProgressIndicator();
@@ -287,7 +291,7 @@ function handleShortcuts(event) {
         togglePause();
     } else if (event.key === 'r' || event.key === 'R') {
         event.preventDefault();
-        resetSession();
+        resetSession({ stopRecording: true });
     }
 }
 
@@ -449,6 +453,8 @@ async function startRecording() {
             const audioBlob = new Blob(state.audioChunks, { type: 'audio/webm' });
             downloadAudio(audioBlob);
             stream.getTracks().forEach((track) => track.stop());
+            state.isRecording = false;
+            ui.recordingIndicator.classList.remove('active');
         };
 
         state.recorder.start();
