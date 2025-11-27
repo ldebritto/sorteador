@@ -45,6 +45,17 @@ body {
     color: #FFFFFF;
 }
 
+.reset-button.dimmed {
+    opacity: 0.1;
+    pointer-events: none;
+    cursor: not-allowed;
+}
+
+.reset-button.dimmed:hover {
+    background: #FFFFFF;
+    color: #FF3B30;
+}
+
 select {
     background: #FFFFFF;
     color: #1D1D1F;
@@ -74,17 +85,29 @@ input[type="file"] {
     background: #FFFFFF;
     color: #1D1D1F;
     border: 2px solid #D2D2D7;
-    padding: 10px 20px;
+    padding: 10px;
     font-size: 16px;
     border-radius: 8px;
     cursor: pointer;
     font-family: inherit;
     transition: all 0.3s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .file-label:hover {
     border-color: #86868B;
     background: #F5F5F7;
+}
+
+.file-label.dimmed {
+    opacity: 0.1;
+    transition: opacity 0.3s;
+}
+
+.file-label.dimmed:hover {
+    opacity: 1;
 }
 
 .main-content {
@@ -171,13 +194,15 @@ button:active {
 }
 
 button:disabled {
-    opacity: 0.5;
+    opacity: 0.1;
     cursor: not-allowed;
     transform: none;
 }
 
 button:disabled:hover {
     transform: none;
+    border-color: #D2D2D7;
+    background: #FFFFFF;
 }
 
 .icon {
@@ -234,6 +259,11 @@ button:disabled:hover {
     display: flex;
     gap: 10px;
     align-items: center;
+    transition: opacity 0.3s;
+}
+
+.settings.hidden {
+    display: none;
 }
 
 input[type="number"] {

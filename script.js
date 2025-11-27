@@ -17,18 +17,22 @@ const state = {
     recorder: null,
     recordingStream: null,
     audioChunks: [],
-    isRecording: false
+    isRecording: false,
+    actionHistory: []
 };
 
 const ui = {
     fileInput: document.getElementById('fileInput'),
+    fileLabel: document.getElementById('fileLabel'),
     fileSelect: document.getElementById('fileSelect'),
+    settings: document.getElementById('settings'),
     timerMinutesInput: document.getElementById('timerMinutes'),
     timerDisplay: document.getElementById('timer'),
     questionDisplay: document.getElementById('question'),
     drawButton: document.getElementById('drawButton'),
     pauseButton: document.getElementById('pauseButton'),
     skipButton: document.getElementById('skipButton'),
+    undoButton: document.getElementById('undoButton'),
     resetButton: document.getElementById('resetButton'),
     recordingIndicator: document.getElementById('recordingIndicator'),
     dots: [
@@ -47,6 +51,9 @@ function init() {
     setTimerDimmed();
     renderPlaceholder();
     updateProgressIndicator();
+    updateFileLabel();
+    updateResetButton();
+    updateSettingsVisibility();
 }
 
 function bindEvents() {
@@ -55,6 +62,7 @@ function bindEvents() {
     ui.drawButton.addEventListener('click', drawQuestion);
     ui.pauseButton.addEventListener('click', togglePause);
     ui.skipButton.addEventListener('click', skipQuestion);
+    ui.undoButton.addEventListener('click', undoLastAction);
     ui.resetButton.addEventListener('click', () => resetSession({ stopRecording: true }));
     document.addEventListener('keydown', handleShortcuts);
 }
@@ -81,6 +89,8 @@ function refreshFileSelect() {
         ui.fileSelect.appendChild(option);
     });
 
+    updateFileLabel();
+
     if (fileNames.length === 1) {
         ui.fileSelect.style.display = 'none';
         ui.fileSelect.value = fileNames[0];
@@ -88,6 +98,31 @@ function refreshFileSelect() {
         handleFileChange();
     } else if (fileNames.length > 1) {
         ui.fileSelect.style.display = 'inline-block';
+    }
+}
+
+function updateFileLabel() {
+    const fileNames = Object.keys(state.files);
+    if (fileNames.length >= 1) {
+        ui.fileLabel.classList.add('dimmed');
+    } else {
+        ui.fileLabel.classList.remove('dimmed');
+    }
+}
+
+function updateResetButton() {
+    if (state.sessionQuestions.length === 0) {
+        ui.resetButton.classList.add('dimmed');
+    } else {
+        ui.resetButton.classList.remove('dimmed');
+    }
+}
+
+function updateSettingsVisibility() {
+    if (state.sessionQuestions.length === 0) {
+        ui.settings.classList.remove('hidden');
+    } else {
+        ui.settings.classList.add('hidden');
     }
 }
 
@@ -159,9 +194,13 @@ function drawQuestion() {
     state.usedQuestionIndexes.push(randomIndex);
     state.sessionQuestions.push(selectedQuestion);
     state.questionStatuses.push('answered');
+    state.actionHistory.push({ type: 'draw', questionIndex: randomIndex });
 
     renderQuestion(selectedQuestion);
     updateProgressIndicator();
+    updateUndoButton();
+    updateResetButton();
+    updateSettingsVisibility();
     startTimer();
 
     ui.skipButton.disabled = state.skipCount >= SKIP_LIMIT;
@@ -172,6 +211,10 @@ function skipQuestion() {
     if (state.questionStatuses.length > 0) {
         state.questionStatuses[state.questionStatuses.length - 1] = 'skipped';
         state.skipCount += 1;
+        // Atualiza a última ação para 'skip'
+        if (state.actionHistory.length > 0) {
+            state.actionHistory[state.actionHistory.length - 1].type = 'skip';
+        }
     }
 
     stopTimer();
@@ -186,6 +229,46 @@ function skipQuestion() {
     if (state.sessionQuestions.length < MAX_SESSION_QUESTIONS) {
         drawQuestion();
     }
+}
+
+function undoLastAction() {
+    if (state.actionHistory.length === 0) return;
+
+    state.actionHistory.pop();
+
+    // Remove a última questão
+    state.sessionQuestions.pop();
+    state.usedQuestionIndexes.pop();
+
+    // Ajusta o status e contador de pulos
+    const lastStatus = state.questionStatuses.pop();
+    if (lastStatus === 'skipped') {
+        state.skipCount -= 1;
+    }
+
+    stopTimer();
+
+    // Se ainda houver questões, mostra a última
+    if (state.sessionQuestions.length > 0) {
+        const previousQuestion = state.sessionQuestions[state.sessionQuestions.length - 1];
+        renderQuestion(previousQuestion);
+        startTimer();
+    } else {
+        // Se não houver mais questões, volta ao placeholder
+        renderPlaceholder('Clique em "Próxima" para começar');
+        setTimerDimmed();
+    }
+
+    updateProgressIndicator();
+    updateUndoButton();
+    updateResetButton();
+    updateSettingsVisibility();
+    ui.skipButton.disabled = state.skipCount >= SKIP_LIMIT;
+    ui.drawButton.disabled = false;
+}
+
+function updateUndoButton() {
+    ui.undoButton.disabled = state.actionHistory.length === 0;
 }
 
 function shouldShowSummary() {
@@ -222,13 +305,18 @@ function resetSession(options = {}) {
     state.sessionQuestions = [];
     state.questionStatuses = [];
     state.skipCount = 0;
+    state.actionHistory = [];
     stopTimer();
     if (shouldStopRecording) {
         stopRecording();
+        renderPlaceholder('Clique em "Próxima" para começar');
     }
 
     setTimerDimmed();
     updateProgressIndicator();
+    updateUndoButton();
+    updateResetButton();
+    updateSettingsVisibility();
     ui.drawButton.disabled = state.questions.length === 0;
     ui.skipButton.disabled = true;
 }
@@ -287,6 +375,9 @@ function handleShortcuts(event) {
     } else if (event.key === ' ' && !ui.skipButton.disabled) {
         event.preventDefault();
         skipQuestion();
+    } else if ((event.key === 'z' || event.key === 'Z') && !ui.undoButton.disabled) {
+        event.preventDefault();
+        undoLastAction();
     } else if ((event.key === 'p' || event.key === 'P') && !ui.pauseButton.disabled) {
         event.preventDefault();
         togglePause();
@@ -357,7 +448,7 @@ function pauseButtonContent() {
             <rect x="6" y="4" width="4" height="16"/>
             <rect x="14" y="4" width="4" height="16"/>
         </svg>
-        Pausa<span class="keyboard-hint">p</span>
+        <span class="keyboard-hint">p</span>
     `;
 }
 
@@ -366,7 +457,7 @@ function playButtonContent() {
         <svg class="icon" viewBox="0 0 24 24">
             <polygon points="5 3 19 12 5 21 5 3"/>
         </svg>
-        Retomar<span class="keyboard-hint">p</span>
+        <span class="keyboard-hint">p</span>
     `;
 }
 

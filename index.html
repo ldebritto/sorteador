@@ -9,12 +9,16 @@
 <body>
     <div class="header">
         <div class="header-controls">
-            <label for="fileInput" class="file-label">Carregar</label>
+            <label for="fileInput" class="file-label" id="fileLabel">
+                <svg class="icon" viewBox="0 0 24 24">
+                    <path d="M12 5v14M5 12h14"/>
+                </svg>
+            </label>
             <input type="file" id="fileInput" accept=".md,.txt" multiple>
             <select id="fileSelect" style="display: none;">
                 <option value="">Escolha a prova</option>
             </select>
-            <div class="settings">
+            <div class="settings" id="settings">
                 <label for="timerMinutes">Timer (min):</label>
                 <input type="number" id="timerMinutes" value="5" min="1" max="60">
             </div>
@@ -41,6 +45,14 @@
             <div class="progress-dot" id="dot5"></div>
         </div>
         
+        <button id="undoButton" disabled>
+            <svg class="icon" viewBox="0 0 24 24">
+                <path d="M3 7v6h6"/>
+                <path d="M21 17a9 9 0 00-9-9 9 9 0 00-6 2.3L3 13"/>
+            </svg>
+            <span class="keyboard-hint">z</span>
+        </button>
+
         <button id="skipButton" disabled>
             <svg class="icon" viewBox="0 0 24 24">
                 <path d="M5 4l10 8-10 8V4z"/>
@@ -48,7 +60,7 @@
             </svg>
             Pular<span class="keyboard-hint">Espaço</span>
         </button>
-        
+
         <button id="drawButton" disabled>
             <svg class="icon" viewBox="0 0 24 24">
                 <circle cx="12" cy="12" r="10"/>
@@ -63,7 +75,7 @@
                 <rect x="6" y="4" width="4" height="16"/>
                 <rect x="14" y="4" width="4" height="16"/>
             </svg>
-            Pausa<span class="keyboard-hint">p</span>
+            <span class="keyboard-hint">p</span>
         </button>
     </div>
 
