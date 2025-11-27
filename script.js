@@ -176,7 +176,7 @@ function drawQuestion() {
     }
 
     if (state.sessionQuestions.length >= MAX_SESSION_QUESTIONS) {
-        alert('Este aluno já tem 5 questões designadas! Use "Nova Prova" para começar uma nova sessão.');
+        alert('Limite máximo de questões atingido! Use "Nova Prova" para começar uma nova sessão.');
         return;
     }
 
@@ -273,8 +273,7 @@ function updateUndoButton() {
 
 function shouldShowSummary() {
     const answeredCount = state.questionStatuses.filter((status) => status === 'answered').length;
-    const skippedCount = state.questionStatuses.filter((status) => status === 'skipped').length;
-    return (answeredCount === 3 && skippedCount === 0) || state.sessionQuestions.length === MAX_SESSION_QUESTIONS;
+    return answeredCount === 3;
 }
 
 function showSummary() {
