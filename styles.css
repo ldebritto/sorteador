@@ -290,7 +290,7 @@ input[type="number"]:focus {
 .summary-list {
     list-style: none;
     padding: 0;
-    max-width: 90%;
+    max-width: 100%;
     text-align: left;
     max-height: 60vh;
     overflow-y: auto;
