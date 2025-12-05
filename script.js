@@ -3,9 +3,9 @@ const SKIP_LIMIT = 2;
 
 const state = {
     questions: [],
-    usedQuestionIndexes: [],
     sessionQuestions: [],
     questionStatuses: [],
+    currentQuestionIndex: 0,
     skipCount: 0,
     timerId: null,
     timeLeft: 0,
@@ -17,8 +17,7 @@ const state = {
     recorder: null,
     recordingStream: null,
     audioChunks: [],
-    isRecording: false,
-    actionHistory: []
+    isRecording: false
 };
 
 const ui = {
@@ -137,8 +136,7 @@ function handleFileChange() {
 
     state.currentFileName = stripExtension(selectedFile);
     state.questions = parseQuestions(content);
-    state.usedQuestionIndexes = [];
-    resetSession();
+    resetSession({ stopRecording: true });
     renderPlaceholder('Clique em "Próxima" para começar');
     ui.drawButton.disabled = state.questions.length === 0;
 }
@@ -165,56 +163,76 @@ function parseQuestions(content) {
 function drawQuestion() {
     if (!state.questions.length) return;
 
+    // Se é a primeira questão, sorteia todas as 5 de uma vez
+    if (state.sessionQuestions.length === 0) {
+        drawAllQuestions();
+        if (!state.isRecording) {
+            startRecording();
+        }
+    }
+
+    // Verifica se já terminou a prova
+    if (state.currentQuestionIndex >= MAX_SESSION_QUESTIONS) {
+        return;
+    }
+
+    // Se já respondeu 3 questões (status 'answered'), mostra o resumo
     if (shouldShowSummary()) {
         showSummary();
         disableSessionControls();
         return;
     }
 
-    if (state.sessionQuestions.length === 0 && !state.isRecording) {
-        startRecording();
-    }
+    // Se a questão atual já existe (foi sorteada), apenas exibe
+    if (state.currentQuestionIndex < state.sessionQuestions.length) {
+        const currentQuestion = state.sessionQuestions[state.currentQuestionIndex];
 
-    if (state.sessionQuestions.length >= MAX_SESSION_QUESTIONS) {
-        alert('Limite máximo de questões atingido! Use "Nova Prova" para começar uma nova sessão.');
+        // Se ainda não tem status, adiciona como 'answered'
+        if (!state.questionStatuses[state.currentQuestionIndex]) {
+            state.questionStatuses[state.currentQuestionIndex] = 'answered';
+        }
+
+        state.currentQuestionIndex++;
+
+        renderQuestion(currentQuestion);
+        updateProgressIndicator();
+        updateUndoButton();
+        updateResetButton();
+        updateSettingsVisibility();
+        startTimer();
+
+        ui.skipButton.disabled = state.skipCount >= SKIP_LIMIT;
+        ui.drawButton.disabled = false;
+    }
+}
+
+function drawAllQuestions() {
+    if (!state.questions.length) return;
+
+    // Verifica se há questões suficientes
+    if (state.questions.length < MAX_SESSION_QUESTIONS) {
+        alert(`O arquivo precisa ter pelo menos ${MAX_SESSION_QUESTIONS} questões. Encontradas: ${state.questions.length}`);
         return;
     }
 
-    if (state.usedQuestionIndexes.length === state.questions.length) {
-        state.usedQuestionIndexes = [];
+    // Sorteia 5 questões únicas
+    const shuffled = [...state.questions];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
     }
 
-    const availableIndexes = state.questions
-        .map((_, index) => index)
-        .filter((index) => !state.usedQuestionIndexes.includes(index));
-
-    const randomIndex = availableIndexes[Math.floor(Math.random() * availableIndexes.length)];
-    const selectedQuestion = state.questions[randomIndex];
-
-    state.usedQuestionIndexes.push(randomIndex);
-    state.sessionQuestions.push(selectedQuestion);
-    state.questionStatuses.push('answered');
-    state.actionHistory.push({ type: 'draw', questionIndex: randomIndex });
-
-    renderQuestion(selectedQuestion);
-    updateProgressIndicator();
-    updateUndoButton();
-    updateResetButton();
-    updateSettingsVisibility();
-    startTimer();
-
-    ui.skipButton.disabled = state.skipCount >= SKIP_LIMIT;
-    ui.drawButton.disabled = false;
+    state.sessionQuestions = shuffled.slice(0, MAX_SESSION_QUESTIONS);
+    state.questionStatuses = [];
+    state.currentQuestionIndex = 0;
 }
 
 function skipQuestion() {
-    if (state.questionStatuses.length > 0) {
-        state.questionStatuses[state.questionStatuses.length - 1] = 'skipped';
+    const currentIndex = state.currentQuestionIndex - 1;
+
+    if (currentIndex >= 0 && currentIndex < state.questionStatuses.length) {
+        state.questionStatuses[currentIndex] = 'skipped';
         state.skipCount += 1;
-        // Atualiza a última ação para 'skip'
-        if (state.actionHistory.length > 0) {
-            state.actionHistory[state.actionHistory.length - 1].type = 'skip';
-        }
     }
 
     stopTimer();
@@ -226,21 +244,18 @@ function skipQuestion() {
         return;
     }
 
-    if (state.sessionQuestions.length < MAX_SESSION_QUESTIONS) {
+    if (state.currentQuestionIndex < MAX_SESSION_QUESTIONS) {
         drawQuestion();
     }
 }
 
 function undoLastAction() {
-    if (state.actionHistory.length === 0) return;
+    if (state.currentQuestionIndex === 0) return;
 
-    state.actionHistory.pop();
+    // Volta uma questão
+    state.currentQuestionIndex--;
 
-    // Remove a última questão
-    state.sessionQuestions.pop();
-    state.usedQuestionIndexes.pop();
-
-    // Ajusta o status e contador de pulos
+    // Remove o status da questão atual
     const lastStatus = state.questionStatuses.pop();
     if (lastStatus === 'skipped') {
         state.skipCount -= 1;
@@ -248,13 +263,13 @@ function undoLastAction() {
 
     stopTimer();
 
-    // Se ainda houver questões, mostra a última
-    if (state.sessionQuestions.length > 0) {
-        const previousQuestion = state.sessionQuestions[state.sessionQuestions.length - 1];
+    // Mostra a questão anterior
+    if (state.currentQuestionIndex > 0) {
+        const previousQuestion = state.sessionQuestions[state.currentQuestionIndex - 1];
         renderQuestion(previousQuestion);
         startTimer();
     } else {
-        // Se não houver mais questões, volta ao placeholder
+        // Se voltou ao início, mostra o placeholder
         renderPlaceholder('Clique em "Próxima" para começar');
         setTimerDimmed();
     }
@@ -268,7 +283,7 @@ function undoLastAction() {
 }
 
 function updateUndoButton() {
-    ui.undoButton.disabled = state.actionHistory.length === 0;
+    ui.undoButton.disabled = state.currentQuestionIndex === 0;
 }
 
 function shouldShowSummary() {
@@ -303,8 +318,8 @@ function resetSession(options = {}) {
 
     state.sessionQuestions = [];
     state.questionStatuses = [];
+    state.currentQuestionIndex = 0;
     state.skipCount = 0;
-    state.actionHistory = [];
     stopTimer();
     if (shouldStopRecording) {
         stopRecording();
@@ -322,7 +337,6 @@ function resetSession(options = {}) {
 
 function resetQuestions() {
     state.questions = [];
-    state.usedQuestionIndexes = [];
     resetSession();
     renderPlaceholder();
 }
@@ -348,10 +362,10 @@ function updateProgressIndicator() {
     ui.dots.forEach((dot, index) => {
         dot.classList.remove('completed', 'current', 'skipped');
 
-        if (index < state.sessionQuestions.length - 1) {
+        if (index < state.currentQuestionIndex - 1) {
             const status = state.questionStatuses[index];
             dot.classList.add(status === 'skipped' ? 'skipped' : 'completed');
-        } else if (index === state.sessionQuestions.length - 1) {
+        } else if (index === state.currentQuestionIndex - 1 && state.currentQuestionIndex > 0) {
             dot.classList.add('current');
         }
     });
