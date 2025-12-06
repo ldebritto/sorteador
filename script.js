@@ -169,41 +169,50 @@ function drawQuestion() {
         if (!state.isRecording) {
             startRecording();
         }
-    }
-
-    // Verifica se já terminou a prova
-    if (state.currentQuestionIndex >= MAX_SESSION_QUESTIONS) {
+        // Mostra a primeira questão
+        showCurrentQuestion();
         return;
     }
 
-    // Se já respondeu 3 questões (status 'answered'), mostra o resumo
-    if (shouldShowSummary()) {
-        showSummary();
-        disableSessionControls();
-        return;
-    }
+    // Se há uma questão sendo exibida, marca como 'answered' antes de avançar
+    if (state.currentQuestionIndex < state.sessionQuestions.length &&
+        state.currentQuestionIndex < MAX_SESSION_QUESTIONS) {
 
-    // Se a questão atual já existe (foi sorteada), apenas exibe
-    if (state.currentQuestionIndex < state.sessionQuestions.length) {
-        const currentQuestion = state.sessionQuestions[state.currentQuestionIndex];
-
-        // Se ainda não tem status, adiciona como 'answered'
+        // Marca a questão atual como 'answered' se ainda não tem status
         if (!state.questionStatuses[state.currentQuestionIndex]) {
             state.questionStatuses[state.currentQuestionIndex] = 'answered';
         }
 
         state.currentQuestionIndex++;
 
-        renderQuestion(currentQuestion);
-        updateProgressIndicator();
-        updateUndoButton();
-        updateResetButton();
-        updateSettingsVisibility();
-        startTimer();
+        // Verifica se já deve mostrar o resumo
+        if (shouldShowSummary()) {
+            showSummary();
+            disableSessionControls();
+            return;
+        }
 
-        ui.skipButton.disabled = state.skipCount >= SKIP_LIMIT;
-        ui.drawButton.disabled = false;
+        // Se ainda há questões, mostra a próxima
+        if (state.currentQuestionIndex < MAX_SESSION_QUESTIONS) {
+            showCurrentQuestion();
+        }
     }
+}
+
+function showCurrentQuestion() {
+    if (state.currentQuestionIndex >= state.sessionQuestions.length) return;
+
+    const currentQuestion = state.sessionQuestions[state.currentQuestionIndex];
+
+    renderQuestion(currentQuestion);
+    updateProgressIndicator();
+    updateUndoButton();
+    updateResetButton();
+    updateSettingsVisibility();
+    startTimer();
+
+    ui.skipButton.disabled = state.skipCount >= SKIP_LIMIT;
+    ui.drawButton.disabled = false;
 }
 
 function drawAllQuestions() {
@@ -228,24 +237,26 @@ function drawAllQuestions() {
 }
 
 function skipQuestion() {
-    const currentIndex = state.currentQuestionIndex - 1;
-
-    if (currentIndex >= 0 && currentIndex < state.questionStatuses.length) {
-        state.questionStatuses[currentIndex] = 'skipped';
+    // Marca a questão atual como 'skipped'
+    if (state.currentQuestionIndex < state.sessionQuestions.length) {
+        state.questionStatuses[state.currentQuestionIndex] = 'skipped';
         state.skipCount += 1;
     }
 
+    state.currentQuestionIndex++;
     stopTimer();
     updateProgressIndicator();
 
+    // Verifica se deve mostrar o resumo
     if (shouldShowSummary()) {
         showSummary();
         disableSessionControls();
         return;
     }
 
+    // Se ainda há questões, mostra a próxima
     if (state.currentQuestionIndex < MAX_SESSION_QUESTIONS) {
-        drawQuestion();
+        showCurrentQuestion();
     }
 }
 
@@ -255,23 +266,21 @@ function undoLastAction() {
     // Volta uma questão
     state.currentQuestionIndex--;
 
-    // Remove o status da questão atual
-    const lastStatus = state.questionStatuses.pop();
-    if (lastStatus === 'skipped') {
-        state.skipCount -= 1;
+    // Remove o status da questão se ela já tinha um
+    if (state.questionStatuses.length > state.currentQuestionIndex) {
+        const lastStatus = state.questionStatuses.pop();
+        if (lastStatus === 'skipped') {
+            state.skipCount -= 1;
+        }
     }
 
     stopTimer();
 
-    // Mostra a questão anterior
-    if (state.currentQuestionIndex > 0) {
-        const previousQuestion = state.sessionQuestions[state.currentQuestionIndex - 1];
-        renderQuestion(previousQuestion);
+    // Mostra a questão atual (após voltar o índice)
+    if (state.currentQuestionIndex >= 0) {
+        const currentQuestion = state.sessionQuestions[state.currentQuestionIndex];
+        renderQuestion(currentQuestion);
         startTimer();
-    } else {
-        // Se voltou ao início, mostra o placeholder
-        renderPlaceholder('Clique em "Próxima" para começar');
-        setTimerDimmed();
     }
 
     updateProgressIndicator();
@@ -298,7 +307,9 @@ function showSummary() {
     const summaryList = document.createElement('ul');
     summaryList.className = 'summary-list';
 
-    state.sessionQuestions.forEach((question, index) => {
+    // Mostra apenas as questões que foram exibidas (até currentQuestionIndex)
+    for (let index = 0; index < state.currentQuestionIndex; index++) {
+        const question = state.sessionQuestions[index];
         const listItem = document.createElement('li');
         listItem.dataset.number = `${index + 1}.`;
         listItem.textContent = question;
@@ -306,7 +317,7 @@ function showSummary() {
             listItem.classList.add('skipped');
         }
         summaryList.appendChild(listItem);
-    });
+    }
 
     ui.questionDisplay.innerHTML = '';
     ui.questionDisplay.appendChild(summaryList);
@@ -362,19 +373,23 @@ function updateProgressIndicator() {
     ui.dots.forEach((dot, index) => {
         dot.classList.remove('completed', 'current', 'skipped');
 
-        if (index < state.currentQuestionIndex - 1) {
+        // Se a questão já tem status (foi respondida ou pulada)
+        if (state.questionStatuses[index] !== undefined) {
             const status = state.questionStatuses[index];
             dot.classList.add(status === 'skipped' ? 'skipped' : 'completed');
-        } else if (index === state.currentQuestionIndex - 1 && state.currentQuestionIndex > 0) {
+        }
+        // Se é a questão atual sendo exibida (sem status ainda)
+        else if (index === state.currentQuestionIndex) {
             dot.classList.add('current');
         }
+        // Caso contrário, mantém o estilo padrão (cinza)
     });
 }
 
 function renderProgressDotsForSummary() {
     ui.dots.forEach((dot, index) => {
         dot.classList.remove('completed', 'current', 'skipped');
-        if (index < state.sessionQuestions.length) {
+        if (index < state.currentQuestionIndex) {
             const status = state.questionStatuses[index];
             dot.classList.add(status === 'skipped' ? 'skipped' : 'completed');
         }
