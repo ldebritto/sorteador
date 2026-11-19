@@ -150,6 +150,7 @@ function showExamChooser() {
     state.isChoosingExam = true;
     ui.drawButton.disabled = true;
     ui.skipButton.disabled = true;
+    updateUndoButton();
 
     const chooser = document.createElement('div');
     chooser.className = 'exam-chooser';
@@ -331,6 +332,12 @@ function skipQuestion() {
 }
 
 function undoLastAction() {
+    // Antes de começar, desfazer volta para a escolha da prova
+    if (canReturnToExamChooser()) {
+        showExamChooser();
+        return;
+    }
+
     if (state.currentQuestionIndex === 0) return;
 
     // Volta uma questão
@@ -362,7 +369,13 @@ function undoLastAction() {
 }
 
 function updateUndoButton() {
-    ui.undoButton.disabled = state.currentQuestionIndex === 0;
+    ui.undoButton.disabled = state.currentQuestionIndex === 0 && !canReturnToExamChooser();
+}
+
+function canReturnToExamChooser() {
+    return Object.keys(state.files).length > 1 &&
+        !state.isChoosingExam &&
+        state.sessionQuestions.length === 0;
 }
 
 function shouldShowSummary() {
