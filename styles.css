@@ -1,3 +1,20 @@
+/* Flexoki light (https://stephango.com/flexoki) */
+:root {
+    --paper: #FFFCF0;
+    --bg-2: #F2F0E5;
+    --ui: #E6E4D9;
+    --ui-2: #DAD8CE;
+    --ui-3: #CECDC3;
+    --tx: #100F0F;
+    --tx-2: #6F6E69;
+    --tx-3: #B7B5AC;
+    --red: #AF3029;
+    --orange: #BC5215;
+    --green: #66800B;
+    --blue: #205EA6;
+    --blue-hover: #1A4F8C;
+}
+
 * {
     margin: 0;
     padding: 0;
@@ -6,8 +23,8 @@
 
 body {
     font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Code', monospace;
-    background: #F5F5F7;
-    color: #1D1D1F;
+    background: var(--paper);
+    color: var(--tx);
     height: 100vh;
     overflow: hidden;
     display: flex;
@@ -29,20 +46,20 @@ body {
 }
 
 .reset-button {
-    background: #FFFFFF;
-    color: #FF3B30;
-    border: 2px solid #FF3B30;
-    padding: 8px 20px;
+    background: transparent;
+    color: var(--red);
+    border: none;
+    padding: 8px 16px;
     font-size: 14px;
-    border-radius: 8px;
+    border-radius: 6px;
     cursor: pointer;
     font-family: inherit;
-    transition: all 0.3s;
+    transition: background 0.2s, color 0.2s, opacity 0.3s;
 }
 
 .reset-button:hover {
-    background: #FF3B30;
-    color: #FFFFFF;
+    background: var(--red);
+    color: var(--paper);
 }
 
 .reset-button.dimmed {
@@ -52,8 +69,8 @@ body {
 }
 
 .reset-button.dimmed:hover {
-    background: #FFFFFF;
-    color: #FF3B30;
+    background: transparent;
+    color: var(--red);
 }
 
 input[type="file"] {
@@ -61,23 +78,22 @@ input[type="file"] {
 }
 
 .file-label {
-    background: #FFFFFF;
-    color: #1D1D1F;
-    border: 2px solid #D2D2D7;
+    background: var(--ui);
+    color: var(--tx);
+    border: none;
     padding: 10px;
     font-size: 16px;
-    border-radius: 8px;
+    border-radius: 6px;
     cursor: pointer;
     font-family: inherit;
-    transition: all 0.3s;
+    transition: background 0.2s, opacity 0.3s;
     display: inline-flex;
     align-items: center;
     justify-content: center;
 }
 
 .file-label:hover {
-    border-color: #86868B;
-    background: #F5F5F7;
+    background: var(--ui-2);
 }
 
 .file-label.dimmed {
@@ -95,7 +111,7 @@ input[type="file"] {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(245, 245, 247, 0.9);
+    background: rgba(255, 252, 240, 0.9);
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.2s;
@@ -108,11 +124,11 @@ input[type="file"] {
 
 .drop-message {
     padding: 40px 60px;
-    border: 3px dashed #86868B;
-    border-radius: 16px;
+    border: 2px dashed var(--tx-2);
+    border-radius: 6px;
     font-size: 20px;
-    color: #1D1D1F;
-    background: #FFFFFF;
+    color: var(--tx);
+    background: var(--bg-2);
 }
 
 .main-content {
@@ -133,15 +149,15 @@ input[type="file"] {
 }
 
 .timer.normal {
-    color: #34C759;
+    color: var(--green);
 }
 
 .timer.warning {
-    color: #FF9500;
+    color: var(--orange);
 }
 
 .timer.danger {
-    color: #FF3B30;
+    color: var(--red);
 }
 
 .timer.hidden {
@@ -149,7 +165,7 @@ input[type="file"] {
 }
 
 .timer.dimmed {
-    color: #86868B;
+    color: var(--tx-3);
 }
 
 .question {
@@ -157,7 +173,7 @@ input[type="file"] {
     text-align: center;
     max-width: 90%;
     line-height: 1.5;
-    color: #1D1D1F;
+    color: var(--tx);
     max-height: 60vh;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
@@ -174,40 +190,54 @@ input[type="file"] {
 }
 
 button {
-    background: #FFFFFF;
-    color: #1D1D1F;
-    border: 2px solid #D2D2D7;
+    background: var(--ui);
+    color: var(--tx);
+    border: none;
     padding: 15px 40px;
     font-size: 18px;
-    border-radius: 8px;
+    border-radius: 6px;
     cursor: pointer;
     font-family: inherit;
-    transition: all 0.3s;
+    transition: background 0.2s, opacity 0.3s;
     display: flex;
     align-items: center;
     gap: 10px;
 }
 
 button:hover {
-    border-color: #007AFF;
-    background: #F5F5F7;
-    transform: translateY(-2px);
+    background: var(--ui-2);
 }
 
 button:active {
-    transform: translateY(0);
+    background: var(--ui-3);
 }
 
 button:disabled {
-    opacity: 0.1;
+    opacity: 0.25;
     cursor: not-allowed;
-    transform: none;
 }
 
 button:disabled:hover {
-    transform: none;
-    border-color: #D2D2D7;
-    background: #FFFFFF;
+    background: var(--ui);
+}
+
+#drawButton {
+    background: var(--blue);
+    color: var(--paper);
+}
+
+#drawButton:hover,
+#drawButton:active {
+    background: var(--blue-hover);
+}
+
+#drawButton:disabled:hover {
+    background: var(--blue);
+}
+
+#drawButton .keyboard-hint {
+    background: rgba(255, 252, 240, 0.15);
+    color: var(--paper);
 }
 
 .icon {
@@ -224,12 +254,12 @@ button:disabled:hover {
     display: inline-block;
     margin-left: 8px;
     padding: 2px 6px;
-    background: #F5F5F7;
-    border: 1px solid #D2D2D7;
+    background: var(--paper);
+    border: none;
     border-radius: 4px;
     font-size: 12px;
     font-family: monospace;
-    color: #86868B;
+    color: var(--tx-2);
 }
 
 .recording-indicator {
@@ -237,9 +267,10 @@ button:disabled:hover {
     align-items: center;
     gap: 8px;
     padding: 8px 16px;
-    background: #FFFFFF;
-    border: 2px solid #FF3B30;
-    border-radius: 8px;
+    background: var(--bg-2);
+    color: var(--red);
+    border: none;
+    border-radius: 6px;
     font-size: 14px;
 }
 
@@ -250,7 +281,7 @@ button:disabled:hover {
 .recording-dot {
     width: 10px;
     height: 10px;
-    background: #FF3B30;
+    background: var(--red);
     border-radius: 50%;
     animation: pulse 1.5s ease-in-out infinite;
 }
@@ -272,23 +303,23 @@ button:disabled:hover {
 }
 
 input[type="number"] {
-    background: #FFFFFF;
-    color: #1D1D1F;
-    border: 2px solid #D2D2D7;
+    background: var(--ui);
+    color: var(--tx);
+    border: 2px solid transparent;
     padding: 10px;
     width: 50px;
     font-size: 16px;
-    border-radius: 8px;
+    border-radius: 6px;
     font-family: inherit;
 }
 
 input[type="number"]:focus {
     outline: none;
-    border-color: #007AFF;
+    border-color: var(--blue);
 }
 
 .placeholder {
-    color: #86868B;
+    color: var(--tx-2);
     font-style: italic;
 }
 
@@ -302,7 +333,7 @@ input[type="number"]:focus {
 
 .exam-chooser-title {
     font-size: 18px;
-    color: #86868B;
+    color: var(--tx-2);
     margin-bottom: 10px;
 }
 
@@ -335,21 +366,21 @@ input[type="number"]:focus {
     position: absolute;
     left: 0;
     font-weight: bold;
-    color: #007AFF;
+    color: var(--blue);
 }
 
 .summary-list li.skipped {
-    color: #86868B;
+    color: var(--tx-2);
     opacity: 0.6;
 }
 
 .summary-list li.skipped::before {
-    color: #FF9500;
+    color: var(--orange);
 }
 
 label {
     font-size: 14px;
-    color: #86868B;
+    color: var(--tx-2);
 }
 
 .progress-indicator {
@@ -384,32 +415,25 @@ label {
     width: 16px;
     height: 16px;
     border-radius: 50%;
-    background: #E5E5EA;
-    border: 2px solid #C7C7CC;
-    transition: all 0.3s;
+    background: var(--ui-2);
+    transition: background 0.3s, transform 0.3s;
 }
 
 .progress-dot.completed {
-    background: #34C759;
-    border-color: #34C759;
-    box-shadow: 0 0 10px rgba(52, 199, 89, 0.5);
+    background: var(--green);
 }
 
 .progress-dot.skipped {
-    background: #FF9500;
-    border-color: #FF9500;
-    box-shadow: 0 0 10px rgba(255, 149, 0, 0.5);
+    background: var(--orange);
 }
 
 .progress-dot.current {
-    background: #007AFF;
-    border-color: #007AFF;
-    box-shadow: 0 0 10px rgba(0, 122, 255, 0.5);
+    background: var(--blue);
     transform: scale(1.2);
 }
 
 .progress-label {
     font-size: 14px;
-    color: #86868B;
+    color: var(--tx-2);
     margin-right: 10px;
 }
