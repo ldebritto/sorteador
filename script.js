@@ -17,6 +17,7 @@ const state = {
     dangerPlayed: false,
     files: {},
     currentFileName: '',
+    isChoosingExam: false,
     recorder: null,
     recordingStream: null,
     audioChunks: [],
@@ -26,7 +27,6 @@ const state = {
 const ui = {
     fileInput: document.getElementById('fileInput'),
     fileLabel: document.getElementById('fileLabel'),
-    fileSelect: document.getElementById('fileSelect'),
     settings: document.getElementById('settings'),
     timerMinutesInput: document.getElementById('timerMinutes'),
     timerDisplay: document.getElementById('timer'),
@@ -61,12 +61,11 @@ function init() {
 
 function bindEvents() {
     ui.fileInput.addEventListener('change', handleFileInput);
-    ui.fileSelect.addEventListener('change', handleFileChange);
     ui.drawButton.addEventListener('click', drawQuestion);
     ui.pauseButton.addEventListener('click', togglePause);
     ui.skipButton.addEventListener('click', skipQuestion);
     ui.undoButton.addEventListener('click', undoLastAction);
-    ui.resetButton.addEventListener('click', () => resetSession({ stopRecording: true }));
+    ui.resetButton.addEventListener('click', startNewExam);
     document.addEventListener('keydown', handleShortcuts);
     document.addEventListener('dragenter', handleDragEnter);
     document.addEventListener('dragover', handleDragOver);
@@ -112,39 +111,79 @@ function hasFiles(event) {
 }
 
 function loadFiles(fileList) {
-    Array.from(fileList)
-        .filter((file) => ACCEPTED_EXTENSIONS.test(file.name))
-        .forEach((file) => {
-            const reader = new FileReader();
-            reader.onload = ({ target }) => {
-                state.files[file.name] = target?.result || '';
-                refreshFileSelect();
-            };
-            reader.readAsText(file);
+    const files = Array.from(fileList).filter((file) => ACCEPTED_EXTENSIONS.test(file.name));
+    if (!files.length) return;
+
+    // Lê todos os arquivos antes de atualizar a tela, para mostrar a escolha uma única vez
+    Promise.all(files.map((file) => file.text())).then((contents) => {
+        files.forEach((file, index) => {
+            state.files[file.name] = contents[index] || '';
         });
+        updateFileLabel();
+
+        // Não interrompe uma prova em andamento; a escolha aparece na próxima "Nova Prova"
+        if (state.sessionQuestions.length === 0) {
+            promptExamSelection();
+        }
+    });
 }
 
-function refreshFileSelect() {
-    ui.fileSelect.innerHTML = '<option value="">Escolha a prova</option>';
+function promptExamSelection() {
     const fileNames = Object.keys(state.files);
 
-    fileNames.forEach((fileName) => {
-        const option = document.createElement('option');
-        option.value = fileName;
-        option.textContent = fileName;
-        ui.fileSelect.appendChild(option);
+    if (fileNames.length === 1) {
+        selectExam(fileNames[0]);
+    } else if (fileNames.length > 1) {
+        showExamChooser();
+    }
+}
+
+function startNewExam() {
+    resetSession({ stopRecording: true });
+    if (Object.keys(state.files).length > 1) {
+        showExamChooser();
+    }
+}
+
+function showExamChooser() {
+    state.questions = [];
+    state.isChoosingExam = true;
+    ui.drawButton.disabled = true;
+    ui.skipButton.disabled = true;
+
+    const chooser = document.createElement('div');
+    chooser.className = 'exam-chooser';
+
+    const title = document.createElement('p');
+    title.className = 'exam-chooser-title';
+    title.textContent = 'Escolha a prova';
+    chooser.appendChild(title);
+
+    Object.keys(state.files).forEach((fileName, index) => {
+        const option = document.createElement('button');
+        option.className = 'exam-option';
+        option.textContent = stripExtension(fileName);
+        if (index < 9) {
+            const hint = document.createElement('span');
+            hint.className = 'keyboard-hint';
+            hint.textContent = index + 1;
+            option.appendChild(hint);
+        }
+        option.addEventListener('click', () => selectExam(fileName));
+        chooser.appendChild(option);
     });
 
-    updateFileLabel();
+    ui.questionDisplay.innerHTML = '';
+    ui.questionDisplay.appendChild(chooser);
+    ui.questionDisplay.classList.remove('placeholder');
+}
 
-    if (fileNames.length === 1) {
-        ui.fileSelect.style.display = 'none';
-        ui.fileSelect.value = fileNames[0];
-        state.currentFileName = stripExtension(fileNames[0]);
-        handleFileChange();
-    } else if (fileNames.length > 1) {
-        ui.fileSelect.style.display = 'inline-block';
-    }
+function selectExam(fileName) {
+    state.isChoosingExam = false;
+    state.currentFileName = stripExtension(fileName);
+    state.questions = parseQuestions(state.files[fileName]);
+    resetSession({ stopRecording: true });
+    renderPlaceholder(`${state.currentFileName}: clique em "Próxima" para começar`);
 }
 
 function updateFileLabel() {
@@ -170,22 +209,6 @@ function updateSettingsVisibility() {
     } else {
         ui.settings.classList.add('hidden');
     }
-}
-
-function handleFileChange() {
-    const selectedFile = ui.fileSelect.value;
-    const content = state.files[selectedFile];
-
-    if (!selectedFile || !content) {
-        resetQuestions();
-        return;
-    }
-
-    state.currentFileName = stripExtension(selectedFile);
-    state.questions = parseQuestions(content);
-    resetSession({ stopRecording: true });
-    renderPlaceholder('Clique em "Próxima" para começar');
-    ui.drawButton.disabled = state.questions.length === 0;
 }
 
 function parseQuestions(content) {
@@ -393,12 +416,6 @@ function resetSession(options = {}) {
     ui.skipButton.disabled = true;
 }
 
-function resetQuestions() {
-    state.questions = [];
-    resetSession();
-    renderPlaceholder();
-}
-
 function renderQuestion(text) {
     ui.questionDisplay.textContent = text;
     ui.questionDisplay.classList.remove('placeholder');
@@ -458,7 +475,13 @@ function handleShortcuts(event) {
         togglePause();
     } else if (event.key === 'r' || event.key === 'R') {
         event.preventDefault();
-        resetSession({ stopRecording: true });
+        startNewExam();
+    } else if (state.isChoosingExam && /^[1-9]$/.test(event.key) && event.target.tagName !== 'INPUT') {
+        const fileName = Object.keys(state.files)[Number(event.key) - 1];
+        if (fileName) {
+            event.preventDefault();
+            selectExam(fileName);
+        }
     }
 }
 

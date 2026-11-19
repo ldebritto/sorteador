@@ -14,7 +14,7 @@ Aplicação web para professores que aplicam provas orais e já usam o Obsidian 
 ## Como usar
 - Abra [index.html](index.html) no navegador (sem instalação) ou acesse diretamente no [GitHub Pages](https://ldebritto.github.io/sorteador/).
 - Clique no botão `+` e escolha uma ou mais provas (arquivos `.md`/`.txt`).
-- Se mais de um arquivo for carregado, selecione a prova no dropdown. Para uma única prova, ela é carregada automaticamente.
+- Carregue os arquivos pelo botão "+" ou arrastando-os para a página. Se houver mais de um, a tela mostra as provas para escolher (clique ou tecla 1-9); "Próxima" só é liberado após a escolha. Para uma única prova, ela é carregada automaticamente.
 - Ajuste o tempo por questão (minutos) no campo "Timer (min)" antes de começar.
 - Clique em `Próxima` ou pressione `Enter` para sortear a primeira questão. O timer inicia e a gravação de áudio começa automaticamente.
 - Use o botão `Pular` ou pressione `Espaço` para pular uma questão (máximo 2 pulos por sessão).
@@ -40,7 +40,7 @@ Aplicação web para professores que aplicam provas orais e já usam o Obsidian 
   - `p` - Pausar/Retomar timer
   - `r` - Nova prova
 - **Função desfazer**: Volta à questão anterior, revertendo o progresso e ajustando pulos automaticamente.
-- **Múltiplos arquivos**: Carregue várias provas e alterne entre elas no dropdown.
+- **Múltiplos arquivos**: Carregue várias provas e escolha entre elas a cada "Nova Prova".
 
 ## Dicas rápidas
 - Configure as permissões de microfone do navegador antes de iniciar para evitar interrupções.
