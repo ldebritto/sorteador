@@ -1,5 +1,8 @@
 const MAX_SESSION_QUESTIONS = 5;
 const SKIP_LIMIT = 2;
+const ACCEPTED_EXTENSIONS = /\.(md|txt)$/i;
+
+let dragDepth = 0;
 
 const state = {
     questions: [],
@@ -34,6 +37,7 @@ const ui = {
     undoButton: document.getElementById('undoButton'),
     resetButton: document.getElementById('resetButton'),
     recordingIndicator: document.getElementById('recordingIndicator'),
+    dropOverlay: document.getElementById('dropOverlay'),
     dots: [
         document.getElementById('dot1'),
         document.getElementById('dot2'),
@@ -64,17 +68,60 @@ function bindEvents() {
     ui.undoButton.addEventListener('click', undoLastAction);
     ui.resetButton.addEventListener('click', () => resetSession({ stopRecording: true }));
     document.addEventListener('keydown', handleShortcuts);
+    document.addEventListener('dragenter', handleDragEnter);
+    document.addEventListener('dragover', handleDragOver);
+    document.addEventListener('dragleave', handleDragLeave);
+    document.addEventListener('drop', handleDrop);
 }
 
 function handleFileInput(event) {
-    Array.from(event.target.files).forEach((file) => {
-        const reader = new FileReader();
-        reader.onload = ({ target }) => {
-            state.files[file.name] = target?.result || '';
-            refreshFileSelect();
-        };
-        reader.readAsText(file);
-    });
+    loadFiles(event.target.files);
+}
+
+function handleDragEnter(event) {
+    if (!hasFiles(event)) return;
+    event.preventDefault();
+    dragDepth++;
+    ui.dropOverlay.classList.add('visible');
+}
+
+function handleDragOver(event) {
+    if (!hasFiles(event)) return;
+    event.preventDefault();
+    event.dataTransfer.dropEffect = 'copy';
+}
+
+function handleDragLeave(event) {
+    if (!hasFiles(event)) return;
+    dragDepth = Math.max(0, dragDepth - 1);
+    if (dragDepth === 0) {
+        ui.dropOverlay.classList.remove('visible');
+    }
+}
+
+function handleDrop(event) {
+    if (!hasFiles(event)) return;
+    event.preventDefault();
+    dragDepth = 0;
+    ui.dropOverlay.classList.remove('visible');
+    loadFiles(event.dataTransfer.files);
+}
+
+function hasFiles(event) {
+    return Array.from(event.dataTransfer?.types || []).includes('Files');
+}
+
+function loadFiles(fileList) {
+    Array.from(fileList)
+        .filter((file) => ACCEPTED_EXTENSIONS.test(file.name))
+        .forEach((file) => {
+            const reader = new FileReader();
+            reader.onload = ({ target }) => {
+                state.files[file.name] = target?.result || '';
+                refreshFileSelect();
+            };
+            reader.readAsText(file);
+        });
 }
 
 function refreshFileSelect() {

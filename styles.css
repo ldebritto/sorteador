@@ -110,6 +110,32 @@ input[type="file"] {
     opacity: 1;
 }
 
+.drop-overlay {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(245, 245, 247, 0.9);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
+    z-index: 100;
+}
+
+.drop-overlay.visible {
+    opacity: 1;
+}
+
+.drop-message {
+    padding: 40px 60px;
+    border: 3px dashed #86868B;
+    border-radius: 16px;
+    font-size: 20px;
+    color: #1D1D1F;
+    background: #FFFFFF;
+}
+
 .main-content {
     flex: 1;
     display: flex;
